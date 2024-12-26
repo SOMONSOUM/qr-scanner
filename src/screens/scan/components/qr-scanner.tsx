@@ -136,13 +136,7 @@ export const QRScanner = () => {
                 repeat: Infinity,
                 ease: "easeInOut",
               }}
-            >
-              {/* Corner Markers */}
-              <div className="absolute -top-1 -left-1 w-12 h-12 border-t-4 border-l-4 border-yellow-300 rounded-tl-xl" />
-              <div className="absolute -top-1 -right-1 w-12 h-12 border-t-4 border-r-4 border-yellow-300 rounded-tr-xl" />
-              <div className="absolute -bottom-1 -left-1 w-12 h-12 border-b-4 border-l-4 border-yellow-300 rounded-bl-xl" />
-              <div className="absolute -bottom-1 -right-1 w-12 h-12 border-b-4 border-r-4 border-yellow-300 rounded-br-xl" />
-            </motion.div>
+            ></motion.div>
           </div>
         </div>
 
