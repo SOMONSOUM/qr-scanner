@@ -1,8 +1,11 @@
 import { Toaster } from "sonner";
-import { Inter } from "next/font/google";
+import { Koh_Santepheap } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const kohSantapheap = Koh_Santepheap({
+  subsets: ["khmer", "latin"],
+  weight: ["100", "300", "400", "700", "900"],
+});
 
 export const metadata = {
   title: "QR Code Scanner",
@@ -16,7 +19,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={kohSantapheap.className}>
         {children}
         <Toaster richColors />
       </body>
