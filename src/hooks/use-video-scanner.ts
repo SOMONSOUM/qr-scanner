@@ -1,5 +1,6 @@
 import QrScanner from 'qr-scanner';
 import { RefObject, useEffect } from 'react';
+import { useScannerInstance } from './use-scanner-instance';
 
 export const useVideoScanner = (
   ref: RefObject<HTMLVideoElement | null>,
@@ -11,7 +12,7 @@ export const useVideoScanner = (
   overlay?: HTMLDivElement | null,
   preferredCamera?: string | undefined
 ) => {
-
+  const { setScanner } = useScannerInstance();
   useEffect(() => {
     if (ref.current) {
       const scanner = new QrScanner(
@@ -21,6 +22,7 @@ export const useVideoScanner = (
         calculateScanRegion,
         preferredCamera
       );
+      setScanner(scanner);
       scanner.start();
       return () => scanner.destroy();
     }
