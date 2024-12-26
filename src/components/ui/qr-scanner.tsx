@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
-import { Flashlight, QrCode, X } from "lucide-react";
+import { useCallback, useRef } from "react";
+import { Flashlight, QrCode  } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -15,28 +15,18 @@ import {
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { CameraScan } from "../custom/camera-scan";
+import { useQRScannerStore } from "@/store";
+import { useScannerInstance } from "@/hooks/use-scanner-instance";
 
-export const QRScanner = () => {
-  const [flashlightOn, setFlashlightOn] = useState(false);
-  const [scanResult, setScanResult] = useState<string | null>(null);
-  const scannerRef = useRef<any>(null);
+export const QRScanner: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const { flashlightOn, scanResult, setScanResult } = useQRScannerStore();
+  const { toggleFlashlight } = useScannerInstance();
 
-  const toggleFlashlight = useCallback(async () => {
-    if (!scannerRef.current) return;
-
-    try {
-      await scannerRef.current.toggleFlash();
-      setFlashlightOn((prev) => !prev);
-    } catch (error) {
-      console.error("Flashlight error:", error);
-    }
-  }, []);
-
-  const closeDialog = () => {
+  const closeDialog = useCallback(() => {
     setScanResult(null);
-  };
+  }, [setScanResult]);
 
   return (
     <div className="fixed inset-0 bg-black">

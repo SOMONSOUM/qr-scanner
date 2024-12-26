@@ -11,6 +11,7 @@ export const useVideoScanner = (
   overlay?: HTMLDivElement | null,
   preferredCamera?: string | undefined
 ) => {
+
   useEffect(() => {
     if (ref.current) {
       const scanner = new QrScanner(
