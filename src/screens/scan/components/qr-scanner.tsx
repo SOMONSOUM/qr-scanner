@@ -22,6 +22,7 @@ export const QRScanner = () => {
   const [isScanning, setIsScanning] = useState(false);
   const [flashlightOn, setFlashlightOn] = useState(false);
   const [scanResult, setScanResult] = useState<string | null>(null);
+  const [cameraReady, setCameraReady] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const scannerRef = useRef<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -78,10 +79,11 @@ export const QRScanner = () => {
       await scanner.start();
       scannerRef.current = scanner;
       setIsScanning(true);
+      setCameraReady(true); // Set camera ready to true after starting the scanner
     } catch (error) {
       console.error("Scanner error:", error);
     }
-  }, []);
+  }, [isMobile]);
 
   const stopScanner = useCallback(() => {
     if (scannerRef.current) {
@@ -90,6 +92,7 @@ export const QRScanner = () => {
       scannerRef.current = null;
       setIsScanning(false);
       setFlashlightOn(false);
+      setCameraReady(false); // Set camera ready to false after stopping the scanner
     }
   }, []);
 
@@ -126,15 +129,13 @@ export const QRScanner = () => {
       <div className="relative h-[100dvh] w-full overflow-hidden">
         {/* Header */}
         <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-gradient-to-b from-black/50 to-transparent">
-          <h1 className="text-xl font-bold text-white">ABA&apos; ស្កែន</h1>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-white hover:bg-white/20"
+          <h1 className="text-xl font-bold text-white">AAS ស្កែន</h1>
+          <button
+            className="text-white hover:bg-transparent rounded-full p-2"
             onClick={handleBack}
           >
-            <X className="w-6 h-6" />
-          </Button>
+            <X className="w-6 h-6 hover:text-white" />
+          </button>
         </div>
 
         {/* Camera View */}
@@ -145,29 +146,31 @@ export const QRScanner = () => {
           />
 
           {/* Scanning Frame */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="absolute inset-0" />
-            <motion.div
-              ref={overlayRef}
-              className="relative w-72 h-72 max-w-[80vw] max-h-[80vw]"
-              initial={{ borderColor: "#FCD34D" }}
-              animate={{
-                scale: isScanning ? [1, 1.02, 1] : 1,
-                borderColor: ["#FCD34D", "#FBBF24", "#FCD34D"],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            >
-              {/* Corner Markers */}
-              <div className="absolute -top-1 -left-1 w-12 h-12 border-t-4 border-l-4 border-blue-300 rounded-tl-xl" />
-              <div className="absolute -top-1 -right-1 w-12 h-12 border-t-4 border-r-4 border-blue-300 rounded-tr-xl" />
-              <div className="absolute -bottom-1 -left-1 w-12 h-12 border-b-4 border-l-4 border-blue-300 rounded-bl-xl" />
-              <div className="absolute -bottom-1 -right-1 w-12 h-12 border-b-4 border-r-4 border-blue-300 rounded-br-xl" />
-            </motion.div>
-          </div>
+          {cameraReady && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="absolute inset-0" />
+              <motion.div
+                ref={overlayRef}
+                className="relative w-72 h-72 max-w-[80vw] max-h-[80vw]"
+                initial={{ borderColor: "#FCD34D" }}
+                animate={{
+                  scale: isScanning ? [1, 1.02, 1] : 1,
+                  borderColor: ["#FCD34D", "#FBBF24", "#FCD34D"],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              >
+                {/* Corner Markers */}
+                <div className="absolute -top-1 -left-1 w-12 h-12 border-t-4 border-l-4 border-blue-300 rounded-tl-xl" />
+                <div className="absolute -top-1 -right-1 w-12 h-12 border-t-4 border-r-4 border-blue-300 rounded-tr-xl" />
+                <div className="absolute -bottom-1 -left-1 w-12 h-12 border-b-4 border-l-4 border-blue-300 rounded-bl-xl" />
+                <div className="absolute -bottom-1 -right-1 w-12 h-12 border-b-4 border-r-4 border-blue-300 rounded-br-xl" />
+              </motion.div>
+            </div>
+          )}
         </div>
 
         {/* Bottom Controls */}
