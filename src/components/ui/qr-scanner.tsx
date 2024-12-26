@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef } from "react";
-import { Flashlight, QrCode  } from "lucide-react";
+import { Flashlight, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
