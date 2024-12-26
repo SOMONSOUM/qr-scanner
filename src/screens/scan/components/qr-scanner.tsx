@@ -15,6 +15,7 @@ import {
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import useMediaQuery from "@/hooks/use-media-query";
 
 export const QRScanner = () => {
   const [, setHasCamera] = useState(false);
@@ -25,6 +26,8 @@ export const QRScanner = () => {
   const scannerRef = useRef<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  const overlayRef = useRef<HTMLDivElement | null>(null);
 
   const startScanner = useCallback(async () => {
     if (!videoRef.current || typeof window === "undefined") return;
@@ -39,8 +42,28 @@ export const QRScanner = () => {
         },
         {
           returnDetailedScanResult: true,
-          highlightScanRegion: true,
-          highlightCodeOutline: true,
+          highlightScanRegion: false,
+          highlightCodeOutline: false,
+          overlay: overlayRef.current ? overlayRef.current : undefined,
+          calculateScanRegion(video) {
+            const smallestDimension = Math.min(
+              video.videoWidth,
+              video.videoHeight
+            );
+            const scanRegionSize = isMobile
+              ? Math.round(smallestDimension * 0.6)
+              : Math.round(smallestDimension * 0.4);
+            const offsetX = Math.round((video.videoWidth - scanRegionSize) / 2);
+            const offsetY = Math.round(
+              (video.videoHeight - scanRegionSize) / 2
+            );
+            return {
+              x: offsetX,
+              y: offsetY,
+              width: scanRegionSize,
+              height: scanRegionSize,
+            };
+          },
         }
       );
 
@@ -123,8 +146,9 @@ export const QRScanner = () => {
 
           {/* Scanning Frame */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="absolute inset-0 bg-black/60" />
+            <div className="absolute inset-0" />
             <motion.div
+              ref={overlayRef}
               className="relative w-72 h-72 max-w-[80vw] max-h-[80vw]"
               initial={{ borderColor: "#FCD34D" }}
               animate={{
@@ -136,7 +160,13 @@ export const QRScanner = () => {
                 repeat: Infinity,
                 ease: "easeInOut",
               }}
-            ></motion.div>
+            >
+              {/* Corner Markers */}
+              <div className="absolute -top-1 -left-1 w-12 h-12 border-t-4 border-l-4 border-blue-300 rounded-tl-xl" />
+              <div className="absolute -top-1 -right-1 w-12 h-12 border-t-4 border-r-4 border-blue-300 rounded-tr-xl" />
+              <div className="absolute -bottom-1 -left-1 w-12 h-12 border-b-4 border-l-4 border-blue-300 rounded-bl-xl" />
+              <div className="absolute -bottom-1 -right-1 w-12 h-12 border-b-4 border-r-4 border-blue-300 rounded-br-xl" />
+            </motion.div>
           </div>
         </div>
 
