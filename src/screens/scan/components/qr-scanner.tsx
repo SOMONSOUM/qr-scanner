@@ -203,7 +203,7 @@ export const QRScanner = () => {
           <div className="bg-black p-4">
             <div className="flex justify-center items-center gap-2 overflow-x-auto py-2 px-4">
               {[
-                "/bakong.png",
+                "/bakong.svg",
                 "/nbc.svg",
                 "/unionpay.svg",
                 "/visa.svg",
