@@ -121,7 +121,7 @@ export const QRScanner = () => {
 
   const handleBack = () => {
     stopScanner();
-    router.back();
+    router.push("/");
   };
 
   return (

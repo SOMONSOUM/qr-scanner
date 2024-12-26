@@ -95,7 +95,7 @@ export const QRScanner = () => {
 
   const handleBack = () => {
     stopScanner();
-    router.back();
+    router.push("/");
   };
 
   return (
@@ -103,7 +103,7 @@ export const QRScanner = () => {
       <div className="relative h-[100dvh] w-full overflow-hidden">
         {/* Header */}
         <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-gradient-to-b from-black/50 to-transparent">
-          <h1 className="text-xl font-bold text-white">ABA&apos; ស្កែន</h1>
+          <h1 className="text-xl font-bold text-white">AAS ស្កែន</h1>
           <Button
             variant="ghost"
             size="icon"
