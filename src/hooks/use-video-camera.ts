@@ -1,4 +1,4 @@
-import { RefObject, useCallback, useEffect, useRef } from 'react';
+import { RefObject, useCallback, useEffect, useRef } from "react";
 
 export const useCameraScanner = (props: {
   ref?: RefObject<HTMLVideoElement | null>;
@@ -17,7 +17,7 @@ export const useCameraScanner = (props: {
       try {
         getVideo(theRef.current, props.constraints);
       } catch {
-        console.log('Error getting video');
+        console.log("Error getting video");
       }
     }
   }, [props.constraints, getRef]);
@@ -33,10 +33,10 @@ export const useCameraScanner = (props: {
         videoElement.srcObject = stream;
         videoElement.play();
       } catch (err) {
-        console.log('error:', err);
+        console.log("error:", err);
       }
     } catch {
-      console.log('heyyy');
+      console.log("heyyy");
     }
   };
 
