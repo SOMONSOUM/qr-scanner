@@ -1,6 +1,6 @@
 import { useQRScannerStore } from "@/store";
 import QrScanner from "qr-scanner";
-import { RefObject, useCallback, useEffect, useRef, useState } from "react";
+import { RefObject, useCallback, useEffect, useRef } from "react";
 
 export const useVideoScanner = (
   ref: RefObject<HTMLVideoElement | null>,

@@ -1,6 +1,6 @@
 "use client";
 
-import { QRScanner } from "@/components/ui/qr-scanner";
+import { QRScanner } from "./components/qr-scanner";
 
 export const ScanQRScreen = () => {
   return <QRScanner />;
