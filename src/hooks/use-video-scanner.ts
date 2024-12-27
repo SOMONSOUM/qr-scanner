@@ -27,11 +27,6 @@ export const useVideoScanner = (
       );
       scannerRef.current.start();
 
-      // Check if the device has a flash
-      QrScanner.hasCamera().then(() => {
-        scannerRef.current?.hasFlash().then(setHasFlash);
-      });
-
       return () => scannerRef.current?.destroy();
     }
   }, [
@@ -42,6 +37,11 @@ export const useVideoScanner = (
     ref,
     overlay,
   ]);
+
+  // Check if the device has a flash
+  QrScanner.hasCamera().then(() => {
+    scannerRef.current?.hasFlash().then(setHasFlash);
+  });
 
   const toggleFlashlight = useCallback(async () => {
     if (!scannerRef.current || !hasFlash) return;
