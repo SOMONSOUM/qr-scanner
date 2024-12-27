@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Flashlight, QrCode, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,15 +26,14 @@ export const QRScanner = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const overlayRef = useRef<HTMLDivElement | null>(null);
   const isMobile = useMediaQuery("(max-width: 768px)");
-  const { flashlightOn, scanResult, setScanResult } = useQRScannerStore();
+  const { setScanResult, scanResult } = useQRScannerStore();
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [isFlashlightOn, setIsFlashlightOn] = useState(false);
 
-  const onDecode = useCallback(
-    (result: string) => {
-      console.log("result", result);
-      setScanResult(result);
-    },
-    [setScanResult]
-  );
+  const onDecode = (result: string) => {
+    console.log("result", result);
+    return setScanResult(result);
+  };
 
   const onDecodeError = (error: string | Error) => {
     const err = error.toString();
@@ -86,16 +85,52 @@ export const QRScanner = () => {
       }
       e.target.value = "";
     },
-    [setScanResult]
+    []
   );
 
-  const { toggleFlashlight, hasFlash } = useVideoScanner(
+  useVideoScanner(
     videoRef,
     onDecode,
     onDecodeError,
     calculateScanRegion,
     overlayRef.current
   );
+
+  const toggleFlashlight = async () => {
+    if (!isFlashlightOn) {
+      try {
+        const mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { exact: "environment" } },
+        });
+
+        const track = mediaStream.getVideoTracks()[0];
+        const capabilities =
+          track.getCapabilities() as MediaTrackCapabilities & {
+            torch?: boolean;
+          };
+
+        if (capabilities.torch) {
+          await track.applyConstraints({
+            advanced: [{ torch: true }],
+          } as unknown as MediaTrackConstraints);
+          setStream(mediaStream);
+          setIsFlashlightOn(true);
+        } else {
+          alert("Torch not supported on this device.");
+          track.stop();
+        }
+      } catch (error) {
+        console.error("Error accessing flashlight:", error);
+        alert("Could not access the flashlight.");
+      }
+    } else {
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+        setStream(null);
+      }
+      setIsFlashlightOn(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black">
@@ -144,13 +179,12 @@ export const QRScanner = () => {
           <div className="flex justify-center gap-4 p-4">
             <Button
               variant="ghost"
-              className="h-12 flex-1 max-w-40 bg-neutral-900/90 text-white hover:bg-neutral-800/90 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
+              className="h-12 flex-1 max-w-40 bg-neutral-900/90 text-white hover:bg-neutral-800/90 rounded-full"
               onClick={toggleFlashlight}
-              disabled={!hasFlash}
             >
               <Flashlight
                 className={`w-5 h-5 mr-2 ${
-                  flashlightOn ? "text-yellow-300" : "text-white"
+                  isFlashlightOn ? "text-yellow-300" : "text-white"
                 }`}
               />
               <span className="text-white">ពិល</span>
