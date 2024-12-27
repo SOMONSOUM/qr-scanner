@@ -18,7 +18,8 @@ import { motion } from "framer-motion";
 import { useQRScannerStore } from "@/store";
 import useMediaQuery from "@/hooks/use-media-query";
 import QrScanner from "qr-scanner";
-import { useVideoScanner } from "@/hooks/use-video-scanner";
+import { useQRScanner } from "@/hooks/use-qr-scanner";
+import { toast } from "sonner";
 
 export const QRScanner = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -26,51 +27,26 @@ export const QRScanner = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const overlayRef = useRef<HTMLDivElement | null>(null);
   const isMobile = useMediaQuery("(max-width: 768px)");
-  const { flashlightOn, setScanResult, scanResult } = useQRScannerStore();
-  const scannerRef = useRef<QrScanner | null>(null);
+  const { setScanResult, scanResult } = useQRScannerStore();
 
-  const toggleFlashlight = useCallback(async () => {
-    if (!scannerRef.current) return;
-
-    try {
-      // Check the current state of the flashlight
-      const isFlashOn = scannerRef.current.isFlashOn();
-
-      if (isFlashOn) {
-        await scannerRef.current.turnFlashOff();
-      } else {
-        await scannerRef.current.turnFlashOn();
-      }
-
-      // Update the flashlight state in the store
-      useQRScannerStore.setState({ flashlightOn: !isFlashOn });
-    } catch (error) {
-      console.error("Flashlight error:", error);
-    }
+  const onDecode = useCallback((result: string) => {
+    setScanResult(result);
   }, []);
 
-  const onDecode = (result: string) => {
-    console.log("result", result);
-    return setScanResult(result);
-  };
-
-  const onDecodeError = (error: string | Error) => {
+  const onDecodeError = useCallback((error: string | Error) => {
     const err = error.toString();
 
     if (err === QrScanner.NO_QR_CODE_FOUND) return;
     if (err === "Scanner error: No QR code found") return;
 
-    console.log("error", error.toString());
-  };
+    toast.error("មិនអាចស្កែន QR បាន!", {
+      duration: 3000,
+      position: "top-right",
+      style: { fontFamily: "Koh Santepheap", fontSize: "11pt" },
+    });
+  }, []);
 
-  interface ScanRegion {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  }
-
-  const calculateScanRegion = (): ScanRegion => {
+  const calculateScanRegion = (): QrScanner.ScanRegion => {
     const smallestDimension = Math.min(window.innerWidth, window.innerHeight);
     const scanRegionSize = isMobile
       ? Math.round(smallestDimension * 0.6)
@@ -90,30 +66,13 @@ export const QRScanner = () => {
     setScanResult(null);
   }, [setScanResult]);
 
-  const handleFileInput = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file || typeof window === "undefined") return;
-
-      try {
-        const QrScannerModule = await import("qr-scanner");
-        const result = await QrScannerModule.default.scanImage(file);
-        setScanResult(result);
-      } catch (error) {
-        console.error("File scanning error:", error);
-      }
-      e.target.value = "";
-    },
-    []
-  );
-
-  useVideoScanner(
+  const { flashlightOn, toggleFlashlight, handleFileInput } = useQRScanner({
     videoRef,
     onDecode,
     onDecodeError,
     calculateScanRegion,
-    overlayRef.current
-  );
+    overlay: overlayRef.current ?? undefined,
+  });
 
   return (
     <div className="fixed inset-0 bg-black">
@@ -142,7 +101,6 @@ export const QRScanner = () => {
               animate={{
                 scale: [0.8, 1, 0.8],
                 opacity: [0.5, 1, 0.5],
-                borderColor: ["#FCD34D", "#FBBF24", "#FCD34D"],
               }}
               transition={{
                 duration: 1.5,
