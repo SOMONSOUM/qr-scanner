@@ -49,7 +49,7 @@ export const QRScanner = () => {
     height: number;
   }
 
-  const calculateScanRegion = (video: HTMLVideoElement): ScanRegion => {
+  const calculateScanRegion = (): ScanRegion => {
     const smallestDimension = Math.min(window.innerWidth, window.innerHeight);
     const scanRegionSize = isMobile
       ? Math.round(smallestDimension * 0.6)

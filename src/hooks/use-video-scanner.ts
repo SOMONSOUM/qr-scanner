@@ -46,7 +46,7 @@ export const useVideoScanner = (
     } catch (error) {
       console.error("Flashlight error:", error);
     }
-  }, []);
+  }, [flashlightOn]);
 
   return { toggleFlashlight };
 };
