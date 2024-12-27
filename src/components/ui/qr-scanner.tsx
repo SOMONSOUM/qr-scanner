@@ -161,7 +161,6 @@ export const QRScanner = () => {
         <div className="absolute bottom-0 left-0 right-0 pb-safe">
           <div className="flex justify-center gap-4 p-4">
             <Button
-              disabled
               variant="ghost"
               className="h-12 flex-1 max-w-40 bg-neutral-900/90 text-white hover:bg-neutral-800/90 rounded-full"
               onClick={toggleFlashlight}
