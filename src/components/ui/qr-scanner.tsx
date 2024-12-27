@@ -93,42 +93,55 @@ export const QRScanner = () => {
     onDecode,
     onDecodeError,
     calculateScanRegion,
-    overlayRef.current
+    overlayRef.current,
+    async () => {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { exact: "environment" } },
+      });
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+      }
+    }
   );
 
   const toggleFlashlight = async () => {
-    if (!isFlashlightOn) {
-      try {
-        const mediaStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { exact: "environment" } },
-        });
+    try {
+      // Get the video track from the existing stream
+      const videoTrack = (videoRef.current?.srcObject as MediaStream)
+        ?.getVideoTracks()
+        .find((track) => track.readyState === "live");
 
-        const track = mediaStream.getVideoTracks()[0];
-        const capabilities =
-          track.getCapabilities() as MediaTrackCapabilities & {
-            torch?: boolean;
-          };
+      if (!videoTrack) {
+        alert("No active video stream found.");
+        return;
+      }
 
-        if (capabilities.torch) {
-          await track.applyConstraints({
-            advanced: [{ torch: true }],
-          } as unknown as MediaTrackConstraints);
-          setStream(mediaStream);
-          setIsFlashlightOn(true);
-        } else {
-          alert("Torch not supported on this device.");
-          track.stop();
-        }
-      } catch (error) {
-        console.error("Error accessing flashlight:", error);
-        alert("Could not access the flashlight.");
+      const capabilities =
+        videoTrack.getCapabilities() as MediaTrackCapabilities & {
+          torch?: boolean;
+        };
+
+      if (!capabilities.torch) {
+        alert("Torch not supported on this device.");
+        return;
       }
-    } else {
-      if (stream) {
-        stream.getTracks().forEach((track) => track.stop());
-        setStream(null);
+
+      if (isFlashlightOn) {
+        // Turn off the flashlight
+        await videoTrack.applyConstraints({
+          advanced: [{ torch: false }],
+        } as unknown as MediaTrackConstraints);
+        setIsFlashlightOn(false);
+      } else {
+        // Turn on the flashlight
+        await videoTrack.applyConstraints({
+          advanced: [{ torch: true }],
+        } as unknown as MediaTrackConstraints);
+        setIsFlashlightOn(true);
       }
-      setIsFlashlightOn(false);
+    } catch (error) {
+      console.error("Error toggling flashlight:", error);
+      alert("Could not toggle the flashlight.");
     }
   };
 

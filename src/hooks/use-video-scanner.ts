@@ -1,6 +1,5 @@
-import { useQRScannerStore } from "@/store";
 import QrScanner from "qr-scanner";
-import { RefObject, useCallback, useEffect, useRef } from "react";
+import { RefObject, useEffect, useRef } from "react";
 
 export const useVideoScanner = (
   ref: RefObject<HTMLVideoElement | null>,
@@ -10,44 +9,41 @@ export const useVideoScanner = (
     | ((video: HTMLVideoElement) => QrScanner.ScanRegion)
     | undefined,
   overlay?: HTMLDivElement | null,
-  preferredCamera?: string | undefined
+  initializeCamera?: (() => Promise<void>) | undefined
 ) => {
   const scannerRef = useRef<QrScanner | null>(null);
 
   useEffect(() => {
-    if (ref.current) {
-      scannerRef.current = new QrScanner(
-        ref.current,
-        onDecode,
-        onDecodeError,
-        calculateScanRegion,
-        preferredCamera
-      );
-      scannerRef.current.start();
+    const setupScanner = async () => {
+      if (initializeCamera) {
+        await initializeCamera();
+      }
 
-      return () => scannerRef.current?.destroy();
-    }
+      if (ref.current) {
+        scannerRef.current = new QrScanner(
+          ref.current,
+          onDecode,
+          onDecodeError,
+          calculateScanRegion
+        );
+        scannerRef.current.start();
+      }
+    };
+
+    setupScanner().catch((error) => {
+      console.error("Error setting up video scanner:", error);
+    });
+
+    return () => {
+      scannerRef.current?.destroy();
+      scannerRef.current = null;
+    };
   }, [
     calculateScanRegion,
+    initializeCamera,
     onDecode,
     onDecodeError,
-    preferredCamera,
-    ref,
     overlay,
+    ref,
   ]);
-
-  const toggleFlashlight = useCallback(async () => {
-    if (!scannerRef.current) return;
-
-    try {
-      await scannerRef.current.toggleFlash();
-      useQRScannerStore.setState((state) => ({
-        flashlightOn: !state.flashlightOn,
-      }));
-    } catch (error) {
-      console.error("Flashlight error:", error);
-    }
-  }, []);
-
-  return { toggleFlashlight };
 };
