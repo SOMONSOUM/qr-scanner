@@ -11,6 +11,7 @@ interface QRScannerState {
   setFlashlightOn: (flashlightOn: boolean) => void;
   setScanResult: (scanResult: string | null) => void;
   setCameraReady: (cameraReady: boolean) => void;
+  toggleFlashlight: () => void;
 }
 
 export const useQRScannerStore = create<QRScannerState>((set) => ({
@@ -24,4 +25,6 @@ export const useQRScannerStore = create<QRScannerState>((set) => ({
   setFlashlightOn: (flashlightOn) => set({ flashlightOn }),
   setScanResult: (scanResult) => set({ scanResult }),
   setCameraReady: (cameraReady) => set({ cameraReady }),
+  toggleFlashlight: () =>
+    set((state) => ({ flashlightOn: !state.flashlightOn })),
 }));

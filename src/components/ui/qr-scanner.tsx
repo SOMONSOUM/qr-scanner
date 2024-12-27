@@ -15,29 +15,35 @@ import {
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { CameraScan } from "../custom/camera-scan";
-import QrScanner from "qr-scanner";
+import { useQRScannerStore } from "@/store";
 
 export const QRScanner = () => {
-  const [scanResult, setScanResult] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [flashlightOn, setFlashlightOn] = useState(false);
-  const scannerRef = useRef<QrScanner | null>(null);
   const router = useRouter();
 
-  const toggleFlashlight = useCallback(async () => {
-    if (!scannerRef.current) return;
-
-    try {
-      await scannerRef.current.toggleFlash();
-      setFlashlightOn((prev) => !prev);
-    } catch (error) {
-      console.error("Flashlight error:", error);
-    }
-  }, []);
+  const { flashlightOn, toggleFlashlight, setScanResult, scanResult } =
+    useQRScannerStore();
 
   const closeDialog = useCallback(() => {
     setScanResult(null);
   }, [setScanResult]);
+
+  const handleFileInput = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file || typeof window === "undefined") return;
+
+      try {
+        const QrScannerModule = await import("qr-scanner");
+        const result = await QrScannerModule.default.scanImage(file);
+        setScanResult(result);
+      } catch (error) {
+        console.error("File scanning error:", error);
+      }
+      e.target.value = "";
+    },
+    []
+  );
 
   return (
     <div className="fixed inset-0 bg-black">
@@ -105,19 +111,7 @@ export const QRScanner = () => {
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={async (e) => {
-            const file = e.target.files?.[0];
-            if (!file || typeof window === "undefined") return;
-
-            try {
-              const QrScannerModule = await import("qr-scanner");
-              const result = await QrScannerModule.default.scanImage(file);
-              setScanResult(result);
-            } catch (error) {
-              console.error("File scanning error:", error);
-            }
-            e.target.value = "";
-          }}
+          onChange={handleFileInput}
         />
 
         {/* Result Dialog */}
