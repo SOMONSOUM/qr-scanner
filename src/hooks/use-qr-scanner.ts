@@ -16,11 +16,27 @@ type UseQRScannerProps = {
 export const useQRScanner = ({ onDecode, videoRef, calculateScanRegion, onDecodeError, overlay, preferredCamera }: UseQRScannerProps) => {
   const scannerRef = useRef<QrScanner | null>(null);
   const [flashlightOn, setFlashlightOn] = useState(false);
+  const [, setHasCamera] = useState(false);
   const { setScanResult } = useQRScannerStore();
 
   useEffect(() => {
     const initializeScanner = async () => {
+
       if (videoRef.current) {
+        const hasCameraResult = await QrScanner.hasCamera();
+        setHasCamera(hasCameraResult);
+
+        if (!hasCameraResult) {
+          toast.error("មិនមានសម្ភារៈកាមេរ៉ាទេ!", {
+            duration: 3000,
+            position: "top-right",
+            style: {
+              fontFamily: "Koh Santepheap",
+              fontSize: "11pt"
+            }
+          });
+          return;
+        }
         const scanner = new QrScanner(
           videoRef.current,
           (result) => onDecode(result.data),
@@ -30,6 +46,7 @@ export const useQRScanner = ({ onDecode, videoRef, calculateScanRegion, onDecode
             highlightScanRegion: false,
             highlightCodeOutline: false,
             overlay,
+            calculateScanRegion,
             preferredCamera
           }
         );
@@ -40,15 +57,13 @@ export const useQRScanner = ({ onDecode, videoRef, calculateScanRegion, onDecode
 
     initializeScanner();
 
-    return () => scannerRef.current?.destroy();
-  }, [
-    calculateScanRegion,
-    onDecode,
-    onDecodeError,
-    preferredCamera,
-    videoRef,
-    overlay,
-  ]);
+    return () => {
+      if (scannerRef.current) {
+        scannerRef.current.stop();
+        scannerRef.current.destroy();
+      }
+    };
+  }, [videoRef, onDecode, onDecodeError]);
 
   const toggleFlashlight = useCallback(async () => {
     if (!scannerRef.current) return;
