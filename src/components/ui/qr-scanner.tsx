@@ -16,13 +16,26 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { CameraScan } from "../custom/camera-scan";
 import { useQRScannerStore } from "@/store";
+import QrScanner from "qr-scanner";
 
 export const QRScanner = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const scannerRef = useRef<QrScanner | null>(null);
 
-  const { flashlightOn, toggleFlashlight, setScanResult, scanResult } =
+  const { flashlightOn, setFlashlightOn, setScanResult, scanResult } =
     useQRScannerStore();
+
+  const toggleFlashlight = useCallback(async () => {
+    if (!scannerRef.current) return;
+
+    try {
+      await scannerRef.current.toggleFlash();
+      setFlashlightOn(!flashlightOn);
+    } catch (error) {
+      console.error("Flashlight error:", error);
+    }
+  }, []);
 
   const closeDialog = useCallback(() => {
     setScanResult(null);

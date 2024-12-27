@@ -1,5 +1,6 @@
+import { useQRScannerStore } from "@/store";
 import QrScanner from "qr-scanner";
-import { RefObject, useEffect } from "react";
+import { RefObject, useCallback, useEffect, useRef, useState } from "react";
 
 export const useVideoScanner = (
   ref: RefObject<HTMLVideoElement | null>,
@@ -11,17 +12,21 @@ export const useVideoScanner = (
   overlay?: HTMLDivElement | null,
   preferredCamera?: string | undefined
 ) => {
+  const scannerRef = useRef<QrScanner | null>(null);
+  const { flashlightOn, setFlashlightOn } = useQRScannerStore();
+
   useEffect(() => {
     if (ref.current) {
-      const scanner = new QrScanner(
+      scannerRef.current = new QrScanner(
         ref.current,
         onDecode,
         onDecodeError,
         calculateScanRegion,
         preferredCamera
       );
-      scanner.start();
-      return () => scanner.destroy();
+      scannerRef.current.start();
+
+      return () => scannerRef.current?.destroy();
     }
   }, [
     calculateScanRegion,
@@ -31,4 +36,17 @@ export const useVideoScanner = (
     ref,
     overlay,
   ]);
+
+  const toggleFlashlight = useCallback(async () => {
+    if (!scannerRef.current) return;
+
+    try {
+      await scannerRef.current.toggleFlash();
+      setFlashlightOn(!flashlightOn);
+    } catch (error) {
+      console.error("Flashlight error:", error);
+    }
+  }, []);
+
+  return { toggleFlashlight };
 };
