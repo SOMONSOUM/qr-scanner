@@ -26,7 +26,7 @@ export const QRScanner = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const overlayRef = useRef<HTMLDivElement | null>(null);
   const isMobile = useMediaQuery("(max-width: 768px)");
-  const { setScanResult, scanResult } = useQRScannerStore();
+  const { flashlightOn, setScanResult, scanResult } = useQRScannerStore();
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [isFlashlightOn, setIsFlashlightOn] = useState(false);
 
@@ -88,62 +88,13 @@ export const QRScanner = () => {
     []
   );
 
-  useVideoScanner(
+  const { toggleFlashlight } = useVideoScanner(
     videoRef,
     onDecode,
     onDecodeError,
     calculateScanRegion,
-    overlayRef.current,
-    async () => {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { exact: "environment" } },
-      });
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
-    }
+    overlayRef.current
   );
-
-  const toggleFlashlight = async () => {
-    try {
-      // Get the video track from the existing stream
-      const videoTrack = (videoRef.current?.srcObject as MediaStream)
-        ?.getVideoTracks()
-        .find((track) => track.readyState === "live");
-
-      if (!videoTrack) {
-        alert("No active video stream found.");
-        return;
-      }
-
-      const capabilities =
-        videoTrack.getCapabilities() as MediaTrackCapabilities & {
-          torch?: boolean;
-        };
-
-      if (!capabilities.torch) {
-        alert("Torch not supported on this device.");
-        return;
-      }
-
-      if (isFlashlightOn) {
-        // Turn off the flashlight
-        await videoTrack.applyConstraints({
-          advanced: [{ torch: false }],
-        } as unknown as MediaTrackConstraints);
-        setIsFlashlightOn(false);
-      } else {
-        // Turn on the flashlight
-        await videoTrack.applyConstraints({
-          advanced: [{ torch: true }],
-        } as unknown as MediaTrackConstraints);
-        setIsFlashlightOn(true);
-      }
-    } catch (error) {
-      console.error("Error toggling flashlight:", error);
-      alert("Could not toggle the flashlight.");
-    }
-  };
 
   return (
     <div className="fixed inset-0 bg-black">
@@ -191,13 +142,14 @@ export const QRScanner = () => {
         <div className="absolute bottom-0 left-0 right-0 pb-safe">
           <div className="flex justify-center gap-4 p-4">
             <Button
+              disabled
               variant="ghost"
               className="h-12 flex-1 max-w-40 bg-neutral-900/90 text-white hover:bg-neutral-800/90 rounded-full"
               onClick={toggleFlashlight}
             >
               <Flashlight
                 className={`w-5 h-5 mr-2 ${
-                  isFlashlightOn ? "text-yellow-300" : "text-white"
+                  flashlightOn ? "text-yellow-300" : "text-white"
                 }`}
               />
               <span className="text-white">ពិល</span>

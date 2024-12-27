@@ -1,5 +1,6 @@
+import { useQRScannerStore } from "@/store";
 import QrScanner from "qr-scanner";
-import { RefObject, useEffect, useRef } from "react";
+import { RefObject, useCallback, useEffect, useRef } from "react";
 
 export const useVideoScanner = (
   ref: RefObject<HTMLVideoElement | null>,
@@ -9,41 +10,44 @@ export const useVideoScanner = (
     | ((video: HTMLVideoElement) => QrScanner.ScanRegion)
     | undefined,
   overlay?: HTMLDivElement | null,
-  initializeCamera?: (() => Promise<void>) | undefined
+  preferredCamera?: string | undefined
 ) => {
   const scannerRef = useRef<QrScanner | null>(null);
 
   useEffect(() => {
-    const setupScanner = async () => {
-      if (initializeCamera) {
-        await initializeCamera();
-      }
+    if (ref.current) {
+      scannerRef.current = new QrScanner(
+        ref.current,
+        onDecode,
+        onDecodeError,
+        calculateScanRegion,
+        preferredCamera
+      );
+      scannerRef.current.start();
 
-      if (ref.current) {
-        scannerRef.current = new QrScanner(
-          ref.current,
-          onDecode,
-          onDecodeError,
-          calculateScanRegion
-        );
-        scannerRef.current.start();
-      }
-    };
-
-    setupScanner().catch((error) => {
-      console.error("Error setting up video scanner:", error);
-    });
-
-    return () => {
-      scannerRef.current?.destroy();
-      scannerRef.current = null;
-    };
+      return () => scannerRef.current?.destroy();
+    }
   }, [
     calculateScanRegion,
-    initializeCamera,
     onDecode,
     onDecodeError,
-    overlay,
+    preferredCamera,
     ref,
+    overlay,
   ]);
+
+  const toggleFlashlight = useCallback(async () => {
+    if (!scannerRef.current) return;
+
+    try {
+      await scannerRef.current.toggleFlash();
+      useQRScannerStore.setState((state) => ({
+        flashlightOn: !state.flashlightOn,
+      }));
+    } catch (error) {
+      console.error("Flashlight error:", error);
+    }
+  }, []);
+
+  return { toggleFlashlight };
 };
