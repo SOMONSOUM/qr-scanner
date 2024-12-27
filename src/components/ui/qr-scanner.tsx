@@ -27,6 +27,27 @@ export const QRScanner = () => {
   const overlayRef = useRef<HTMLDivElement | null>(null);
   const isMobile = useMediaQuery("(max-width: 768px)");
   const { flashlightOn, setScanResult, scanResult } = useQRScannerStore();
+  const scannerRef = useRef<QrScanner | null>(null);
+
+  const toggleFlashlight = useCallback(async () => {
+    if (!scannerRef.current) return;
+
+    try {
+      // Check the current state of the flashlight
+      const isFlashOn = scannerRef.current.isFlashOn();
+
+      if (isFlashOn) {
+        await scannerRef.current.turnFlashOff();
+      } else {
+        await scannerRef.current.turnFlashOn();
+      }
+
+      // Update the flashlight state in the store
+      useQRScannerStore.setState({ flashlightOn: !isFlashOn });
+    } catch (error) {
+      console.error("Flashlight error:", error);
+    }
+  }, []);
 
   const onDecode = (result: string) => {
     console.log("result", result);
@@ -86,7 +107,7 @@ export const QRScanner = () => {
     []
   );
 
-  const { toggleFlashlight } = useVideoScanner(
+  useVideoScanner(
     videoRef,
     onDecode,
     onDecodeError,
