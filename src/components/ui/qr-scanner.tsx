@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef } from "react";
 import { Flashlight, QrCode, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,13 +26,15 @@ export const QRScanner = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const overlayRef = useRef<HTMLDivElement | null>(null);
   const isMobile = useMediaQuery("(max-width: 768px)");
-  const [flashlightOn, setFlashlightOn] = useState(false);
-  const { setScanResult, scanResult } = useQRScannerStore();
+  const { flashlightOn, scanResult, setScanResult } = useQRScannerStore();
 
-  const onDecode = (result: string) => {
-    console.log("result", result);
-    return setScanResult(result);
-  };
+  const onDecode = useCallback(
+    (result: string) => {
+      console.log("result", result);
+      setScanResult(result);
+    },
+    [setScanResult]
+  );
 
   const onDecodeError = (error: string | Error) => {
     const err = error.toString();
@@ -84,28 +86,10 @@ export const QRScanner = () => {
       }
       e.target.value = "";
     },
-    []
+    [setScanResult]
   );
 
-  const toggleFlashlight = useCallback(() => {
-    if (!videoRef.current) return;
-
-    const track = (videoRef.current.srcObject as MediaStream)
-      ?.getVideoTracks()
-      .find((track) => "torch" in track.getCapabilities());
-
-    if (track) {
-      const capabilities = track.getCapabilities();
-      if ((capabilities as any).torch) {
-        track.applyConstraints({
-          advanced: [{ torch: !flashlightOn } as MediaTrackConstraintSet],
-        });
-        setFlashlightOn((prev) => !prev);
-      }
-    }
-  }, [flashlightOn]);
-
-  useVideoScanner(
+  const { toggleFlashlight, hasFlash } = useVideoScanner(
     videoRef,
     onDecode,
     onDecodeError,
@@ -160,8 +144,9 @@ export const QRScanner = () => {
           <div className="flex justify-center gap-4 p-4">
             <Button
               variant="ghost"
-              className="h-12 flex-1 max-w-40 bg-neutral-900/90 text-white hover:bg-neutral-800/90 rounded-full"
+              className="h-12 flex-1 max-w-40 bg-neutral-900/90 text-white hover:bg-neutral-800/90 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={toggleFlashlight}
+              disabled={!hasFlash}
             >
               <Flashlight
                 className={`w-5 h-5 mr-2 ${

@@ -1,6 +1,6 @@
 import { useQRScannerStore } from "@/store";
 import QrScanner from "qr-scanner";
-import { RefObject, useCallback, useEffect, useRef } from "react";
+import { RefObject, useCallback, useEffect, useRef, useState } from "react";
 
 export const useVideoScanner = (
   ref: RefObject<HTMLVideoElement | null>,
@@ -13,6 +13,8 @@ export const useVideoScanner = (
   preferredCamera?: string | undefined
 ) => {
   const scannerRef = useRef<QrScanner | null>(null);
+  const { setFlashlightOn } = useQRScannerStore();
+  const [hasFlash, setHasFlash] = useState(false);
 
   useEffect(() => {
     if (ref.current) {
@@ -24,6 +26,11 @@ export const useVideoScanner = (
         preferredCamera
       );
       scannerRef.current.start();
+
+      // Check if the device has a flash
+      QrScanner.hasCamera().then(() => {
+        scannerRef.current?.hasFlash().then(setHasFlash);
+      });
 
       return () => scannerRef.current?.destroy();
     }
@@ -37,17 +44,17 @@ export const useVideoScanner = (
   ]);
 
   const toggleFlashlight = useCallback(async () => {
-    if (!scannerRef.current) return;
+    if (!scannerRef.current || !hasFlash) return;
 
     try {
+      const currentState = useQRScannerStore.getState().flashlightOn;
       await scannerRef.current.toggleFlash();
-      useQRScannerStore.setState((state) => ({
-        flashlightOn: !state.flashlightOn,
-      }));
+      setFlashlightOn(!currentState);
     } catch (error) {
       console.error("Flashlight error:", error);
+      setFlashlightOn(false);
     }
-  }, []);
+  }, [hasFlash, setFlashlightOn]);
 
-  return { toggleFlashlight };
+  return { toggleFlashlight, hasFlash };
 };
