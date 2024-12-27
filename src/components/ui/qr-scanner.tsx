@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef } from "react";
 import { Flashlight, QrCode, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,8 +27,6 @@ export const QRScanner = () => {
   const overlayRef = useRef<HTMLDivElement | null>(null);
   const isMobile = useMediaQuery("(max-width: 768px)");
   const { flashlightOn, setScanResult, scanResult } = useQRScannerStore();
-  const [stream, setStream] = useState<MediaStream | null>(null);
-  const [isFlashlightOn, setIsFlashlightOn] = useState(false);
 
   const onDecode = (result: string) => {
     console.log("result", result);
@@ -103,7 +101,7 @@ export const QRScanner = () => {
           <h1 className="text-xl font-bold text-white">AAS ស្កែន</h1>
           <button
             className="text-white hover:bg-white/20 rounded-full p-2"
-            onClick={() => router.back()}
+            onClick={() => router.push("/")}
           >
             <X className="w-6 h-6" />
           </button>
