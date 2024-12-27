@@ -62,10 +62,6 @@ export const QRScanner = () => {
     };
   };
 
-  const closeDialog = useCallback(() => {
-    setScanResult(null);
-  }, [setScanResult]);
-
   const { flashlightOn, toggleFlashlight, handleFileInput } = useQRScanner({
     videoRef,
     onDecode,
@@ -74,6 +70,14 @@ export const QRScanner = () => {
     overlay: overlayRef.current ?? undefined,
   });
 
+  const closeDialog = useCallback(() => {
+    setScanResult(null);
+  }, [setScanResult]);
+
+  const handleBack = () => {
+    router.push("/");
+  };
+
   return (
     <div className="fixed inset-0 bg-black">
       <div className="relative h-[100dvh] w-full overflow-hidden">
@@ -81,7 +85,7 @@ export const QRScanner = () => {
           <h1 className="text-xl font-bold text-white">AAS ស្កែន</h1>
           <button
             className="text-white hover:bg-white/20 rounded-full p-2"
-            onClick={() => router.push("/")}
+            onClick={handleBack}
           >
             <X className="w-6 h-6" />
           </button>

@@ -19,23 +19,28 @@ export const useQRScanner = ({ onDecode, videoRef, calculateScanRegion, onDecode
   const { setScanResult } = useQRScannerStore();
 
   useEffect(() => {
-    if (videoRef.current) {
-      scannerRef.current = new QrScanner(
-        videoRef.current,
-        (result) => onDecode(result.data),
-        {
-          onDecodeError,
-          returnDetailedScanResult: true,
-          highlightScanRegion: false,
-          highlightCodeOutline: false,
-          overlay,
-          preferredCamera
-        }
-      );
-      scannerRef.current.start();
+    const initializeScanner = async () => {
+      if (videoRef.current) {
+        const scanner = new QrScanner(
+          videoRef.current,
+          (result) => onDecode(result.data),
+          {
+            onDecodeError,
+            returnDetailedScanResult: true,
+            highlightScanRegion: false,
+            highlightCodeOutline: false,
+            overlay,
+            preferredCamera
+          }
+        );
+        scannerRef.current = scanner;
+        await scanner.start();
+      }
+    };
 
-      return () => scannerRef.current?.destroy();
-    }
+    initializeScanner();
+
+    return () => scannerRef.current?.destroy();
   }, [
     calculateScanRegion,
     onDecode,
