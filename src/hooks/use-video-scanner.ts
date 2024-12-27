@@ -13,7 +13,6 @@ export const useVideoScanner = (
   preferredCamera?: string | undefined
 ) => {
   const scannerRef = useRef<QrScanner | null>(null);
-  const { flashlightOn, setFlashlightOn } = useQRScannerStore();
 
   useEffect(() => {
     if (ref.current) {
@@ -42,11 +41,13 @@ export const useVideoScanner = (
 
     try {
       await scannerRef.current.toggleFlash();
-      setFlashlightOn(!flashlightOn);
+      useQRScannerStore.setState((state) => ({
+        flashlightOn: !state.flashlightOn,
+      }));
     } catch (error) {
       console.error("Flashlight error:", error);
     }
-  }, [flashlightOn]);
+  }, []);
 
   return { toggleFlashlight };
 };
