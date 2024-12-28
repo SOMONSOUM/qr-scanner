@@ -78,11 +78,13 @@ export const QRScanner = () => {
     return () => stopCamera();
   }, []);
 
-  const closeDialog = useCallback(() => {
+  const closeDialog = useCallback(async () => {
     setScanResult(null);
+    await startCamera();
   }, [setScanResult]);
 
   const handleBack = () => {
+    stopCamera();
     router.push("/");
   };
 
