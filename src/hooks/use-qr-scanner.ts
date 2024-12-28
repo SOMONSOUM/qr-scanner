@@ -19,48 +19,18 @@ export const useQRScanner = ({ onDecode, videoRef, calculateScanRegion, onDecode
   const { setScanResult } = useQRScannerStore();
 
   useEffect(() => {
-    const initializeScanner = async () => {
-      if (videoRef.current) {
-        const hasCameraResult = await QrScanner.hasCamera();
-        setHasCamera(hasCameraResult);
+    if (videoRef.current) {
+      scannerRef.current = new QrScanner(
+        videoRef.current,
+        onDecode,
+        onDecodeError,
+        calculateScanRegion,
+        preferredCamera
+      );
+      scannerRef.current.start();
 
-        if (!hasCameraResult) {
-          toast.error("មិនមានសម្ភារៈកាមេរ៉ាទេ!", {
-            duration: 3000,
-            position: "top-right",
-            style: {
-              fontFamily: "Koh Santepheap",
-              fontSize: "11pt"
-            }
-          });
-          return;
-        }
-        const scanner = new QrScanner(
-          videoRef.current,
-          (result) => onDecode(result.data),
-          {
-            onDecodeError,
-            returnDetailedScanResult: true,
-            highlightScanRegion: false,
-            highlightCodeOutline: false,
-            overlay,
-            calculateScanRegion,
-            preferredCamera
-          }
-        );
-        scannerRef.current = scanner;
-        await scanner.start();
-      }
-    };
-
-    initializeScanner();
-
-    return () => {
-      if (scannerRef.current) {
-        scannerRef.current.stop();
-        scannerRef.current.destroy();
-      }
-    };
+      return () => scannerRef.current?.destroy();
+    }
   }, []);
 
   const toggleFlashlight = useCallback(async () => {
