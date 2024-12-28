@@ -61,14 +61,7 @@ export const useQRScanner = ({ onDecode, videoRef, calculateScanRegion, onDecode
         scannerRef.current.destroy();
       }
     };
-  }, [
-    calculateScanRegion,
-    onDecode,
-    onDecodeError,
-    preferredCamera,
-    videoRef,
-    overlay
-  ]);
+  }, []);
 
   const toggleFlashlight = useCallback(async () => {
     if (!scannerRef.current) return;
