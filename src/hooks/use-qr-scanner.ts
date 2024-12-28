@@ -12,7 +12,6 @@ type UseQRScannerProps = {
   preferredCamera?: string;
 }
 
-
 export const useQRScanner = ({ onDecode, videoRef, calculateScanRegion, onDecodeError, overlay, preferredCamera }: UseQRScannerProps) => {
   const scannerRef = useRef<QrScanner | null>(null);
   const [flashlightOn, setFlashlightOn] = useState(false);
@@ -21,7 +20,6 @@ export const useQRScanner = ({ onDecode, videoRef, calculateScanRegion, onDecode
 
   useEffect(() => {
     const initializeScanner = async () => {
-
       if (videoRef.current) {
         const hasCameraResult = await QrScanner.hasCamera();
         setHasCamera(hasCameraResult);
@@ -63,7 +61,14 @@ export const useQRScanner = ({ onDecode, videoRef, calculateScanRegion, onDecode
         scannerRef.current.destroy();
       }
     };
-  }, [videoRef, onDecode, onDecodeError]);
+  }, [
+    calculateScanRegion,
+    onDecode,
+    onDecodeError,
+    preferredCamera,
+    videoRef,
+    overlay
+  ]);
 
   const toggleFlashlight = useCallback(async () => {
     if (!scannerRef.current) return;
