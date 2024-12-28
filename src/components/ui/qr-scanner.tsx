@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { Flashlight, QrCode, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -62,13 +62,21 @@ export const QRScanner = () => {
     };
   };
 
-  const { flashlightOn, toggleFlashlight, handleFileInput } = useQRScanner({
-    videoRef,
-    onDecode,
-    onDecodeError,
-    calculateScanRegion,
-    overlay: overlayRef.current ?? undefined,
+  const {
+    flashlightOn,
+    toggleFlashlight,
+    handleFileChange,
+    startCamera,
+    stopCamera,
+  } = useQRScanner({
+    videoRef: videoRef,
+    overlay: overlayRef.current ? overlayRef.current : undefined,
   });
+
+  useEffect(() => {
+    startCamera();
+    return () => stopCamera();
+  }, []);
 
   const closeDialog = useCallback(() => {
     setScanResult(null);
@@ -172,7 +180,7 @@ export const QRScanner = () => {
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={handleFileInput}
+          onChange={handleFileChange}
         />
 
         <AlertDialog
