@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useRef } from "react";
 import { Flashlight, QrCode, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,23 +29,6 @@ export const QRScanner = () => {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const { setScanResult, scanResult } = useQRScannerStore();
 
-  const onDecode = useCallback((result: string) => {
-    setScanResult(result);
-  }, []);
-
-  const onDecodeError = useCallback((error: string | Error) => {
-    const err = error.toString();
-
-    if (err === QrScanner.NO_QR_CODE_FOUND) return;
-    if (err === "Scanner error: No QR code found") return;
-
-    toast.error("មិនអាចស្កែន QR បាន!", {
-      duration: 3000,
-      position: "top-right",
-      style: { fontFamily: "Koh Santepheap", fontSize: "11pt" },
-    });
-  }, []);
-
   const calculateScanRegion = (): QrScanner.ScanRegion => {
     const smallestDimension = Math.min(window.innerWidth, window.innerHeight);
     const scanRegionSize = isMobile
@@ -71,17 +54,13 @@ export const QRScanner = () => {
   } = useQRScanner({
     videoRef: videoRef,
     overlay: overlayRef.current ? overlayRef.current : undefined,
+    calculateScanRegion,
   });
 
-  useEffect(() => {
-    startCamera();
-    return () => stopCamera();
-  }, []);
-
-  const closeDialog = useCallback(async () => {
+  const closeDialog = async () => {
     setScanResult(null);
     await startCamera();
-  }, [setScanResult]);
+  };
 
   const handleBack = () => {
     stopCamera();
@@ -191,13 +170,13 @@ export const QRScanner = () => {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>QR Code Detected</AlertDialogTitle>
+              <AlertDialogTitle>បានស្កែន​ QR កូដ</AlertDialogTitle>
               <AlertDialogDescription className="break-all">
                 {scanResult}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogAction onClick={closeDialog}>Close</AlertDialogAction>
+              <AlertDialogAction onClick={closeDialog}>បិទ</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

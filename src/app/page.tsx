@@ -1,9 +1,5 @@
-import { ScanQRButton } from "@/components/custom/scan-qr-button";
+import { ScanQRScreen } from "@/screens/scan";
 
 export default function Home() {
-  return (
-    <div className="flex justify-center items-center h-screen p-4 sm:p-6 md:p-8">
-      <ScanQRButton />
-    </div>
-  );
+  return <ScanQRScreen />;
 }
